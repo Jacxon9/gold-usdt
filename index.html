@@ -123,7 +123,7 @@ const OZ_TO_G = 31.1034768;
 const el = id => document.getElementById(id);
 
 async function fetchPrice() {
-  const url = `https://api.metals.dev/v1/latest?api_key=${API_KEY}&base=XAU&symbols=USD`;
+  const url = `https://api.metals.dev/v1/latest?api_key=${API_KEY}&currency=USD&unit=toz`;
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error("价格接口请求失败");
   const data = await res.json();
