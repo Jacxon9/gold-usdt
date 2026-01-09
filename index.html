@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>USDT → Gold (XAU/USD)</title>
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+      background: #0b0f14;
+      color: #e5e7eb;
+      padding: 24px;
+    }
+    .card {
+      max-width: 720px;
+      margin: 0 auto;
+      background: #111827;
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid #1f2937;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 22px;
+    }
+    .muted {
+      color: #9ca3af;
+      font-size: 14px;
+    }
+    .row {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    input {
+      flex: 1;
+      min-width: 200px;
+      font-size: 18px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #374151;
+      background: #020617;
+      color: #e5e7eb;
+    }
+    button {
+      font-size: 16px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      background: #f59e0b;
+      color: #000;
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: 0.6;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 30px;
+      font-weight: 600;
+    }
+    .sub {
+      font-size: 14px;
+      color: #9ca3af;
+      margin-top: 6px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .box {
+      background: #020617;
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+    }
+    .error {
+      color: #fca5a5;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h1>USDT → Gold（XAU/USD）</h1>
+    <div class="muted">
+      报价展示工具 · 每 60 秒刷新 · 非交易 / 非托管
+    </div>
+
+    <div class="row">
+      <input id="usdt" type="number" step="0.01" value="100" />
+      <button id="refresh">刷新计算</button>
+    </div>
+
+    <div class="result" id="gold">—</div>
+    <div class="sub" id="goldSub">—</div>
+
+    <div class="grid">
+      <div class="box">
+        <b>XAU / USD</b>
+        <div id="price">—</div>
+      </div>
+      <div class="box">
+        <b>更新时间</b>
+        <div id="time">—</div>
+      </div>
+    </div>
+
+    <div class="error" id="error"></div>
+  </div>
+
+<script>
+const API_KEY = "YOUR_API_KEY_HERE";
+const OZ_TO_G = 31.1034768;
+
+const el = id => document.getElementById(id);
+
+async function fetchPrice() {
+  const url = `https://api.metals.dev/v1/latest?api_key=${API_KEY}&base=XAU&symbols=USD`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error("价格接口请求失败");
+  const data = await res.json();
+  const price = data?.rates?.USD || data?.data?.rates?.USD;
+  if (!price) throw new Error("无法解析 XAU/USD");
+  return price;
+}
+
+async function refresh() {
+  el("error").textContent = "";
+  try {
+    const usdt = Number(el("usdt").value);
+    const price = await fetchPrice();
+    const oz = usdt / price;
+    const g = oz * OZ_TO_G;
+
+    el("price").textContent = price.toFixed(2);
+    el("gold").textContent = g.toFixed(4) + " g";
+    el("goldSub").textContent = "≈ " + oz.toFixed(6) + " oz";
+    el("time").textContent = new Date().toLocaleString();
+  } catch (e) {
+    el("error").textContent = e.message;
+  }
+}
+
+el("refresh").onclick = refresh;
+refresh();
+setInterval(refresh, 60_000);
+</script>
+</body>
+</html>
